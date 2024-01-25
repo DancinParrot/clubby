@@ -66,6 +66,12 @@ export const authOptions: NextAuthOptions = {
           scope: "openid",
         }
       },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.sub.substring(2, profile.sub.indexOf(",")),
+        }
+      },
       token: {
         async request(context) {
           const alg = 'ES512'
@@ -142,11 +148,6 @@ export const authOptions: NextAuthOptions = {
       client: {
         client_id: 'test',
         token_endpoint_auth_method: 'private_key_jwt',
-      },
-      profile(profile) {
-        return {
-          id: profile.sub
-        }
       },
       jwks:
       {

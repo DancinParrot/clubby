@@ -17,9 +17,17 @@ import {
 import DesktopNav from './nav/desktop-nav'
 import { MobileNav } from './nav/mobile-nav'
 import type { NavItem } from '~/types/nav'
+import { signIn, signOut, useSession } from 'next-auth/react'
+import { api } from '~/utils/api'
 
 export default function Header() {
   const { isOpen, onToggle } = useDisclosure()
+  const { data: sessionData } = useSession();
+
+  const { data: secretMessage } = api.post.getSecretMessage.useQuery(
+    undefined, // no input
+    { enabled: sessionData?.user !== undefined }
+  );
 
   return (
     <Box>
@@ -62,22 +70,63 @@ export default function Header() {
           justify={'flex-end'}
           direction={'row'}
           spacing={6}>
-          <Button as={'a'} fontSize={'sm'} fontWeight={400} variant={'link'} href={'#'}>
-            Sign In
-          </Button>
-          <Button
-            as={'a'}
-            display={{ base: 'none', md: 'inline-flex' }}
-            fontSize={'sm'}
-            fontWeight={600}
-            color={'white'}
-            bg={'blue.400'}
-            href={'#'}
-            _hover={{
-              bg: 'blue.300',
-            }}>
-            Sign Up
-          </Button>
+          {
+            sessionData ? (
+              <>
+
+                <Button
+                  as={'a'}
+                  fontSize={'sm'}
+                  fontWeight={400}
+                  variant={'link'}
+                  href={'#'}
+                >
+                  {sessionData && <span>Hello, {sessionData.user?.name}</span>}
+                </Button>
+                <Button
+                  as={'a'}
+                  display={{ base: 'none', md: 'inline-flex' }}
+                  fontSize={'sm'}
+                  fontWeight={600}
+                  color={'white'}
+                  bg={'blue.400'}
+                  href={'#'}
+                  _hover={{
+                    bg: 'blue.300',
+                  }}
+                  onClick={() => void signOut()}
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  as={'a'}
+                  fontSize={'sm'}
+                  fontWeight={400}
+                  variant={'link'}
+                  href={'#'}
+                  onClick={() => void signIn()}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  as={'a'}
+                  display={{ base: 'none', md: 'inline-flex' }}
+                  fontSize={'sm'}
+                  fontWeight={600}
+                  color={'white'}
+                  bg={'blue.400'}
+                  href={'#'}
+                  _hover={{
+                    bg: 'blue.300',
+                  }}>
+                  Sign Up
+                </Button>
+              </>
+            )
+          }
         </Stack>
       </Flex>
 
@@ -87,6 +136,30 @@ export default function Header() {
     </Box>
   )
 }
+
+// function AuthShowcase() {
+//   const { data: sessionData } = useSession();
+//
+//   const { data: secretMessage } = api.post.getSecretMessage.useQuery(
+//     undefined, // no input
+//     { enabled: sessionData?.user !== undefined }
+//   );
+//
+//   return (
+//     <div className={styles.authContainer}>
+//       <p className={styles.showcaseText}>
+//         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
+//         {secretMessage && <span> - {secretMessage}</span>}
+//       </p>
+//       <button
+//         className={styles.loginButton}
+//         onClick={sessionData ? () => void signOut() : () => void signIn()}
+//       >
+//         {sessionData ? "Sign out" : "Sign in"}
+//       </button>
+//     </div>
+//   );
+// }
 
 // TODO: Add real content and remove placeholder
 const NAV_ITEMS: Array<NavItem> = [
